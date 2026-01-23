@@ -1,23 +1,34 @@
 import { useEffect } from 'react'
 import { useStore } from '../store'
 
+// 声明WebGPU类型
+declare global {
+  interface Navigator {
+    gpu?: GPU;
+  }
+}
+
+interface GPU {
+  requestAdapter(): Promise<GPUAdapter | null>;
+}
+
+interface GPUAdapter {
+  isFallbackAdapter: boolean;
+}
+
 const Settings = () => {
   const { 
     generationMode, 
     setGenerationMode,
     webgpuSupported,
     setWebgpuSupported,
-    localModelStatus,
     setLocalModelStatus,
-    localModelProgress,
-    setLocalModelProgress,
-    localModelCacheSize,
     setLocalModelCacheSize
   } = useStore()
 
   useEffect(() => {
     const checkWebGPU = async () => {
-      if (!navigator.gpu) {
+      if (typeof navigator === 'undefined' || !navigator.gpu) {
         setWebgpuSupported(false)
         return
       }
@@ -59,7 +70,6 @@ const Settings = () => {
         clearInterval(interval)
         setLocalModelStatus('ready')
       }
-      setLocalModelProgress(progress)
     }, 500)
   }
 
@@ -144,12 +154,6 @@ const Settings = () => {
               <span style={{ color: '#9ca3af' }}>WebGPU</span>
               <span className={`tag ${webgpuSupported ? 'active' : ''}`}>
                 {webgpuSupported ? '✓ 支持' : '✗ 不支持'}
-              </span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-              <span style={{ color: '#9ca3af' }}>模型状态</span>
-              <span className={`tag ${localModelStatus === 'ready' ? 'active' : ''}`}>
-                {localModelStatus === 'ready' ? '✓ 已加载' : '○ 未加载'}
               </span>
             </div>
           </div>
