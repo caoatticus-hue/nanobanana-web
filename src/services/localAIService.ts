@@ -1,7 +1,7 @@
 let pipelineInstance: any = null
 
 export const LocalAIService = {
-  task: 'image-generation' as const,
+  task: 'image-generation',
   model: 'Xenova/stable-diffusion-2-1-base',
   
   async getPipeline() {
@@ -9,7 +9,7 @@ export const LocalAIService = {
       return pipelineInstance
     }
     const transformers = await import('@xenova/transformers')
-    pipelineInstance = await transformers.pipeline(this.task, this.model)
+    pipelineInstance = await transformers.pipeline('image-generation', this.model)
     return pipelineInstance
   },
   
