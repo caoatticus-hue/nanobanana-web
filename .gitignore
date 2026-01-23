@@ -1,31 +1,29 @@
-# Dependencies
+# 依赖目录
 node_modules/
 
-# Build outputs
+# 构建输出
 dist/
-build/
 
-# Environment files
+# 环境变量文件
 .env
 .env.local
 .env.*.local
 
-# IDE
-.idea/
+# 编辑器配置
 .vscode/
+.idea/
 *.swp
 *.swo
 
-# OS
+# 操作系统文件
 .DS_Store
 Thumbs.db
 
-# Logs
-*.log
+# 日志文件
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# Testing
+# 测试覆盖
 coverage/
