@@ -17,7 +17,7 @@ const Sidebar = ({ activeTab, onTabChange }: SidebarProps) => {
 
   return (
     <aside className="sidebar">
-      <Header title="AI Studio" />
+      <Header />
       <nav className="sidebar-nav">
         {navItems.map((item) => (
           <div
