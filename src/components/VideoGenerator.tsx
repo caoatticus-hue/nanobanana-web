@@ -36,6 +36,55 @@ const VideoGenerator = () => {
     <div className="main-content">
       <div className="card" style={{ maxWidth: '800px', margin: '0 auto' }}>
         <div className="card-header">
+          <h2 className="card-title">视频生成</h2>
+        </div>
+
+        <div style={{ marginBottom: '20px' }}>
+          <label style={{ display: 'block', marginBottom: '8px', color: '#9ca3af' }}>
+            描述您想要的视频内容
+          </label>
+          <textarea
+            className="input"
+            placeholder="例如：一只猫在草地上跑，阳光明媚，4k画质..."
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            rows={4}
+            style={{ minHeight: '120px' }}
+          />
+        </div>
+
+        <button
+          className="btn btn-primary"
+          onClick={generateVideo}
+          disabled={isGenerating || !prompt.trim()}
+          style={{ width: '100%' }}
+        >
+          {isGenerating ? (
+            <>
+              <span>⏳</span>
+              <span>{status}</span>
+            </>
+          ) : (
+            <>
+              <span>🎬</span>
+              <span>生成视频</span>
+            </>
+          )}
+        </button>
+
+        <div style={{ marginTop: '30px', padding: '20px', backgroundColor: '#2a2a2a', borderRadius: '12px' }}>
+          <p style={{ color: '#9ca3af', textAlign: 'center' }}>
+            提示：视频生成功能正在开发中，敬请期待！
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default VideoGenerator
+      <div className="card" style={{ maxWidth: '800px', margin: '0 auto' }}>
+        <div className="card-header">
           <h2 className="card-title">🎬 视频生成</h2>
         </div>
 
