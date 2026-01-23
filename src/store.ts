@@ -7,9 +7,6 @@ interface AIStore {
   localModelStatus: 'unloaded' | 'loading' | 'ready' | 'error'
   setLocalModelStatus: (status: 'unloaded' | 'loading' | 'ready' | 'error') => void
   
-  localModelProgress: number
-  setLocalModelProgress: (progress: number) => void
-  
   localModelCacheSize: string
   setLocalModelCacheSize: (size: string) => void
   
@@ -23,9 +20,6 @@ export const useStore = create<AIStore>((set) => ({
   
   localModelStatus: 'unloaded',
   setLocalModelStatus: (status) => set({ localModelStatus: status }),
-  
-  localModelProgress: 0,
-  setLocalModelProgress: (progress) => set({ localModelProgress: progress }),
   
   localModelCacheSize: '0 MB',
   setLocalModelCacheSize: (size) => set({ localModelCacheSize: size }),
