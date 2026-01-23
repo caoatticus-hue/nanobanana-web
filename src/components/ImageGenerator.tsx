@@ -60,6 +60,17 @@ export const ImageGenerator: React.FC<ImageGeneratorProps> = ({ engine, onBack }
     setPrompt(text);
   };
 
+  const handleDownload = () => {
+    if (result) {
+      const link = document.createElement('a');
+      link.href = result;
+      link.download = `ai-art-${Date.now()}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
   return (
     <div className="image-generator">
       <button className="back-btn" onClick={onBack}>
@@ -149,6 +160,16 @@ export const ImageGenerator: React.FC<ImageGeneratorProps> = ({ engine, onBack }
 
           {result && (
             <div className="result-section">
-              <img src={result} alt="Generated" 
-              className="result-image" />
-
+              <img src={result} alt="Generated" className="result-image" />
+              <div className="result-actions">
+                <button className="action-btn" onClick={handleDownload}>
+                  下载
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
