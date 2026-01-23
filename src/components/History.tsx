@@ -1,39 +1,28 @@
-import { useState } from 'react'
+const History = () => {
+  return (
+    <div className="main-content">
+      <div className="card" style={{ maxWidth: '800px', margin: '0 auto' }}>
+        <div className="card-header">
+          <h2 className="card-title">📁 历史记录</h2>
+        </div>
 
-interface HistoryItem {
-  id: string
-  type: 'image' | 'video'
-  prompt: string
-  thumbnail: string
-  fullUrl?: string
-  createdAt: string
-  status: 'success' | 'failed'
+        <div style={{ 
+          padding: '60px 20px', 
+          textAlign: 'center',
+          color: '#9ca3af'
+        }}>
+          <div style={{ fontSize: '48px', marginBottom: '16px' }}>📭</div>
+          <p style={{ marginBottom: '8px' }}>暂无历史记录</p>
+          <p style={{ fontSize: '14px', color: '#6b7280' }}>
+            生成的图像会显示在这里
+          </p>
+        </div>
+      </div>
+    </div>
+  )
 }
 
-const History = () => {
-  const [filter, setFilter] = useState<'all' | 'image' | 'video'>('all')
-  const [selectedItem, setSelectedItem] = useState<HistoryItem | null>(null)
-
-  // 模拟历史数据
-  const historyItems: HistoryItem[] = [
-    {
-      id: '1',
-      type: 'image',
-      prompt: '一只可爱的橘猫在阳光明媚的窗台上晒太阳',
-      thumbnail: 'https://picsum.photos/seed/cat/300/300',
-      createdAt: '2024-01-15 14:30',
-      status: 'success'
-    },
-    {
-      id: '2',
-      type: 'image',
-      prompt: '梦幻般的星空下的古老城堡',
-      thumbnail: 'https://picsum.photos/seed/castle/300/300',
-      createdAt: '2024-01-15 13:20',
-      status: 'success'
-    },
-    {
-      id: '3',
+export default History
       type: 'video',
       prompt: '海浪拍打岩石的自然风景',
       thumbnail: 'https://picsum.photos/seed/ocean/300/300',
