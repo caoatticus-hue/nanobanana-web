@@ -15,19 +15,16 @@ const Settings = () => {
     setLocalModelCacheSize
   } = useStore()
 
-  // 检测WebGPU支持
   useEffect(() => {
     const checkWebGPU = async () => {
       if (!navigator.gpu) {
         setWebgpuSupported(false)
         return
       }
-      
       try {
         const adapter = await navigator.gpu.requestAdapter()
         if (adapter) {
           setWebgpuSupported(true)
-          // 获取缓存大小
           if (navigator.storage && navigator.storage.estimate) {
             const estimate = await navigator.storage.estimate()
             const size = estimate.usage ? formatBytes(estimate.usage) : '0 MB'
@@ -41,7 +38,6 @@ const Settings = () => {
         setWebgpuSupported(false)
       }
     }
-
     checkWebGPU()
   }, [setWebgpuSupported, setLocalModelCacheSize])
 
@@ -79,53 +75,40 @@ const Settings = () => {
   return (
     <div className="animate-fade-in">
       <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-        {/* 标题区域 */}
         <div style={{ marginBottom: '30px' }}>
           <h1 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '8px' }}>
             系统设置
           </h1>
-          <p style={{ color: '#9ca3af' }}>
-            选择AI生成模式：在线免费API或本地部署
-          </p>
+          <p style={{ color: '#9ca3af' }}>选择AI生成模式</p>
         </div>
 
-        {/* 生成模式选择 */}
         <div className="card" style={{ marginBottom: '24px' }}>
           <div className="card-header">
             <h2 className="card-title">AI生成引擎</h2>
           </div>
           
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
-            {/* 在线模式 */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
             <div 
               className="card"
               style={{ 
                 cursor: 'pointer',
                 border: generationMode === 'cloud' ? '2px solid #3b82f6' : '1px solid #2e2e2e',
                 backgroundColor: generationMode === 'cloud' ? 'rgba(59, 130, 246, 0.1)' : '#1a1a1a',
-                transition: 'all 0.3s ease',
                 padding: '24px'
               }}
               onClick={() => setGenerationMode('cloud')}
             >
-              <div style={{ textAlign: 'center', padding: '10px' }}>
+              <div style={{ textAlign: 'center' }}>
                 <div style={{ fontSize: '48px', marginBottom: '16px' }}>☁️</div>
-                <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '12px', color: '#ffffff' }}>
-                  在线模式
-                </h3>
-                <p style={{ fontSize: '14px', color: '#9ca3af', marginBottom: '16px' }}>
-                  使用免费Pollinations AI API
-                </p>
+                <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '12px' }}>在线模式</h3>
+                <p style={{ fontSize: '14px', color: '#9ca3af', marginBottom: '16px' }}>使用免费Pollinations AI</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   <span className="tag active">✓ 完全免费</span>
-                  <span className="tag">✓ 无需配置</span>
                   <span className="tag">✓ 快速生成</span>
-                  <span className="tag">✓ 支持图像和视频</span>
                 </div>
               </div>
             </div>
 
-            {/* 本地模式 */}
             <div 
               className="card"
               style={{ 
@@ -133,11 +116,58 @@ const Settings = () => {
                 border: generationMode === 'local' ? '2px solid #10b981' : '1px solid #2e2e2e',
                 backgroundColor: generationMode === 'local' ? 'rgba(16, 185, 129, 0.1)' : '#1a1a1a',
                 opacity: webgpuSupported ? 1 : 0.6,
-                transition: 'all 0.3s ease',
                 padding: '24px'
               }}
               onClick={() => webgpuSupported && setGenerationMode('local')}
             >
-              <div style={{ textAlign: 'center', padding: '10px' }}>
+              <div style={{ textAlign: 'center' }}>
                 <div style={{ fontSize: '48px', marginBottom: '16px' }}>🖥️</div>
-                <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '12px', color: '#ffffff' 
+                <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '12px' }}>本地模式</h3>
+                <p style={{ fontSize: '14px', color: '#9ca3af', marginBottom: '16px' }}>浏览器中运行本地AI</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <span className="tag active">✓ 完全离线</span>
+                  <span className="tag">✓ 保护隐私</span>
+                  <span className="tag">⚠️ 需要WebGPU</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="card">
+          <div className="card-header">
+            <h2 className="card-title">模型状态</h2>
+          </div>
+
+          <div style={{ marginBottom: '20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+              <span style={{ color: '#9ca3af' }}>WebGPU</span>
+              <span className={`tag ${webgpuSupported ? 'active' : ''}`}>
+                {webgpuSupported ? '✓ 支持' : '✗ 不支持'}
+              </span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+              <span style={{ color: '#9ca3af' }}>模型状态</span>
+              <span className={`tag ${localModelStatus === 'ready' ? 'active' : ''}`}>
+                {localModelStatus === 'ready' ? '✓ 已加载' : '○ 未加载'}
+              </span>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <button className="btn btn-primary" onClick={downloadModel} style={{ flex: 1 }}>
+              <span>📥</span>
+              <span>下载模型</span>
+            </button>
+            <button className="btn btn-secondary" onClick={clearModelCache} style={{ flex: 1 }}>
+              <span>🗑️</span>
+              <span>清除缓存</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default Settings
