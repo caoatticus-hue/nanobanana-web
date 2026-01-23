@@ -92,7 +92,7 @@ const Settings = () => {
         {/* 生成模式选择 */}
         <div className="card" style={{ marginBottom: '24px' }}>
           <div className="card-header">
-            <h2 className="card-title">🤖 AI生成引擎</h2>
+            <h2 className="card-title">AI生成引擎</h2>
           </div>
           
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
@@ -111,7 +111,7 @@ const Settings = () => {
               <div style={{ textAlign: 'center', padding: '10px' }}>
                 <div style={{ fontSize: '48px', marginBottom: '16px' }}>☁️</div>
                 <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '12px', color: '#ffffff' }}>
-                  ☁️ 在线模式
+                  在线模式
                 </h3>
                 <p style={{ fontSize: '14px', color: '#9ca3af', marginBottom: '16px' }}>
                   使用免费Pollinations AI API
@@ -140,4 +140,4 @@ const Settings = () => {
             >
               <div style={{ textAlign: 'center', padding: '10px' }}>
                 <div style={{ fontSize: '48px', marginBottom: '16px' }}>🖥️</div>
-                <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '12px', color: '#ff
+                <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '12px', color: '#ffffff' 
