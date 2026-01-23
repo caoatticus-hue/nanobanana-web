@@ -1,4 +1,6 @@
-import { Tab } from '../App'
+import Header from './Header'
+
+type Tab = 'create' | 'video' | 'history' | 'settings'
 
 interface SidebarProps {
   activeTab: Tab
@@ -6,24 +8,18 @@ interface SidebarProps {
 }
 
 const Sidebar = ({ activeTab, onTabChange }: SidebarProps) => {
-  const menuItems = [
-    { id: 'create' as Tab, icon: '🎨', label: '图像生成' },
+  const navItems = [
+    { id: 'create' as Tab, icon: '✨', label: '图像生成' },
     { id: 'video' as Tab, icon: '🎬', label: '视频生成' },
     { id: 'history' as Tab, icon: '📁', label: '历史记录' },
-    { id: 'settings' as Tab, icon: '⚙️', label: '设置' },
+    { id: 'settings' as Tab, icon: '⚙️', label: '系统设置' },
   ]
 
   return (
     <aside className="sidebar">
-      <div className="sidebar-header">
-        <div className="sidebar-logo">
-          <span style={{ fontSize: '28px' }}>✨</span>
-          <span>AI Studio</span>
-        </div>
-      </div>
-      
+      <Header title="AI Studio" />
       <nav className="sidebar-nav">
-        {menuItems.map((item) => (
+        {navItems.map((item) => (
           <div
             key={item.id}
             className={`nav-item ${activeTab === item.id ? 'active' : ''}`}
@@ -34,6 +30,11 @@ const Sidebar = ({ activeTab, onTabChange }: SidebarProps) => {
           </div>
         ))}
       </nav>
+    </aside>
+  )
+}
+
+export default Sidebar
       
       <div style={{ padding: '20px', borderTop: '1px solid #2e2e2e' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
