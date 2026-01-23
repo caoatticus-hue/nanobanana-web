@@ -35,6 +35,7 @@ const Sidebar = ({ activeTab, onTabChange }: SidebarProps) => {
 }
 
 export default Sidebar
+export default Sidebar
       
       <div style={{ padding: '20px', borderTop: '1px solid #2e2e2e' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
