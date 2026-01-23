@@ -1,39 +1,88 @@
 import { useState } from 'react'
-import { useStore } from '../store'
 
 const VideoGenerator = () => {
-  const { generationMode } = useStore()
   const [prompt, setPrompt] = useState('')
   const [isGenerating, setIsGenerating] = useState(false)
-  const [generatedVideos, setGeneratedVideos] = useState<string[]>([])
-  const [progress, setProgress] = useState(0)
   const [status, setStatus] = useState('')
-  const [error, setError] = useState('')
 
-  // Pollinations AI视频生成（在线模式）
-  const generateWithPollinationsVideo = async () => {
+  const generateVideo = async () => {
     if (!prompt.trim()) {
-      setError('请输入提示词')
       return
     }
 
-    setError('')
     setIsGenerating(true)
-    setProgress(0)
-    setStatus('正在连接Pollinations AI视频服务...')
+    setStatus('正在生成视频...')
 
     try {
+      // Pollinations AI 视频生成
       const encodedPrompt = encodeURIComponent(prompt)
       const seed = Math.floor(Math.random() * 1000000)
       
-      // Pollinations视频API URL
-      const url = `https://video.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=576&fps=24&duration=4&seed=${seed}&nologo=true`
+      // 注意：Pollinations AI 主要支持图像生成
+      // 视频生成需要在后端使用更复杂的模型
+      // 这里提供一个占位符实现
+      
+      setStatus('视频生成功能开发中...')
+      
+    } catch (error) {
+      console.error(error)
+      setStatus('视频生成失败')
+    } finally {
+      setIsGenerating(false)
+    }
+  }
 
-      setProgress(30)
-      setStatus('正在生成视频，这可能需要几分钟...')
-      setProgress(50)
+  return (
+    <div className="main-content">
+      <div className="card" style={{ maxWidth: '800px', margin: '0 auto' }}>
+        <div className="card-header">
+          <h2 className="card-title">🎬 视频生成</h2>
+        </div>
 
-      // 验证URL
+        <div style={{ marginBottom: '20px' }}>
+          <label style={{ display: 'block', marginBottom: '8px', color: '#9ca3af' }}>
+            描述您想要的视频内容
+          </label>
+          <textarea
+            className="input"
+            placeholder="例如：一只猫在草地上跑，阳光明媚，4k画质..."
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            rows={4}
+            style={{ minHeight: '120px' }}
+          />
+        </div>
+
+        <button
+          className="btn btn-primary"
+          onClick={generateVideo}
+          disabled={isGenerating || !prompt.trim()}
+          style={{ width: '100%' }}
+        >
+          {isGenerating ? (
+            <>
+              <span>⏳</span>
+              <span>{status}</span>
+            </>
+          ) : (
+            <>
+              <span>🎬</span>
+              <span>生成视频</span>
+            </>
+          )}
+        </button>
+
+        <div style={{ marginTop: '30px', padding: '20px', backgroundColor: '#2a2a2a', borderRadius: '12px' }}>
+          <p style={{ color: '#9ca3af', textAlign: 'center' }}>
+            📝 提示：视频生成功能正在开发中，敬请期待！
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default VideoGenerator
       const response = await fetch(url, { mode: 'cors' })
 
       if (!response.ok) {
