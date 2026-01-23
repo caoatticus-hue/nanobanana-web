@@ -1,8 +1,6 @@
 import { useState } from 'react'
-import { useStore } from '../store'
 
 const ImageGenerator = () => {
-  const { generationMode } = useStore()
   const [prompt, setPrompt] = useState('')
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedImages, setGeneratedImages] = useState<string[]>([])
@@ -48,9 +46,9 @@ const ImageGenerator = () => {
       
       setProgress(100)
       setStatus('生成完成！')
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err)
-      setError(err.message || '生成失败，请重试')
+      setError(err instanceof Error ? err.message : '生成失败，请重试')
       setStatus('')
     } finally {
       setIsGenerating(false)
