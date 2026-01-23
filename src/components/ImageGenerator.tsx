@@ -149,4 +149,6 @@ export const ImageGenerator: React.FC<ImageGeneratorProps> = ({ engine, onBack }
 
           {result && (
             <div className="result-section">
-              <img src={result} alt
+              <img src={result} alt="Generated" 
+              className="result-image" />
+
