@@ -6,7 +6,9 @@ const VideoGenerator = () => {
   const [status, setStatus] = useState('')
   const [progress, setProgress] = useState(0)
   const [generatedFrames, setGeneratedFrames] = useState<string[]>([])
-  const [frameCount, setFrameCount] = useState(8)
+  const [duration, setDuration] = useState(5)
+  const [resolution, setResolution] = useState('720p')
+  const [motion, setMotion] = useState(3)
 
   const generateFrames = async () => {
     if (!prompt.trim()) {
@@ -20,10 +22,11 @@ const VideoGenerator = () => {
 
     try {
       const frames: string[] = []
-      const ratio = { width: 512, height: 512 }
+      const frameCount = duration * 2 // 每秒2帧
+      const ratio = { width: resolution === '1080p' ? 1920 : 1280, height: resolution === '1080p' ? 1080 : 720 }
 
       for (let i = 0; i < frameCount; i++) {
-        const encodedPrompt = encodeURIComponent(`${prompt}, frame ${i + 1}`)
+        const encodedPrompt = encodeURIComponent(`${prompt}, frame ${i + 1} of ${frameCount}`)
         const seed = Math.floor(Math.random() * 1000000) + i
         const url = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${ratio.width}&height=${ratio.height}&seed=${seed}&nologo=true&enhance=true`
 
@@ -47,43 +50,83 @@ const VideoGenerator = () => {
 
   return (
     <div className="main-content">
-      <div className="card" style={{ maxWidth: '800px', margin: '0 auto' }}>
-        <div className="card-header">
-          <h2 className="card-title">视频生成</h2>
-        </div>
+      <div className="card animate-fade-in">
+        <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '20px' }}>
+          AI 视频生成
+        </h2>
 
         <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', marginBottom: '8px', color: '#9ca3af' }}>
-            描述视频内容
-          </label>
           <textarea
             className="input"
-            placeholder="描述您想要的视频..."
+            placeholder="描述你想要生成的视频..."
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             rows={4}
           />
         </div>
 
-        <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', marginBottom: '8px', color: '#9ca3af' }}>
-            帧数：{frameCount}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
+          <div>
+            <label style={{ display: 'block', fontSize: '13px', color: 'rgba(255,255,255,0.6)', marginBottom: '8px' }}>
+              时长（秒）
+            </label>
+            <div style={{ display: 'flex', gap: '6px' }}
+            >
+              {[3, 5, 10].map((d) => (
+                <button
+                  key={d}
+                  className={`tab ${duration === d ? 'active' : ''}`}
+                  onClick={() => setDuration(d)}
+                  style={{ flex: 1, padding: '12px' }}
+                >
+                  {d}秒
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label style={{ display: 'block', fontSize: '13px', color: 'rgba(255,255,255,0.6)', marginBottom: '8px' }}>
+              分辨率
+            </label>
+            <div style={{ display: 'flex', gap: '6px' }}>
+              {['720p', '1080p'].map((r) => (
+                <button
+                  key={r}
+                  className={`tab ${resolution === r ? 'active' : ''}`}
+                  onClick={() => setResolution(r)}
+                  style={{ flex: 1, padding: '12px' }}
+                >
+                  {r}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div style={{ marginBottom: '24px' }}>
+          <label style={{ display: 'block', fontSize: '13px', color: 'rgba(255,255,255,0.6)', marginBottom: '12px' }}>
+            运动强度：{motion}
           </label>
           <input
             type="range"
-            min="4"
-            max="16"
-            value={frameCount}
-            onChange={(e) => setFrameCount(parseInt(e.target.value))}
-            style={{ width: '100%' }}
+            min="1"
+            max="5"
+            value={motion}
+            onChange={(e) => setMotion(parseInt(e.target.value))}
+            style={{ width: '100%', accentColor: '#7c83fd' }}
           />
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'rgba(255,255,255,0.4)', marginTop: '4px' }}>
+            <span>静止</span>
+            <span>剧烈</span>
+          </div>
         </div>
 
         {isGenerating && (
           <div style={{ marginBottom: '20px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-              <span style={{ color: '#9ca3af' }}>{status}</span>
-              <span style={{ color: '#9ca3af' }}>{progress}%</span>
+              <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)' }}>{status}</span>
+              <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)' }}>{progress}%</span>
             </div>
             <div className="progress-bar">
               <div className="progress-bar-fill" style={{ width: `${progress}%` }} />
@@ -98,22 +141,24 @@ const VideoGenerator = () => {
           style={{ width: '100%' }}
         >
           <span>🎬</span>
-          <span>生成帧序列</span>
+          <span>{isGenerating ? '生成中...' : '开始生成视频'}</span>
         </button>
-
-        {generatedFrames.length > 0 && (
-          <div style={{ marginTop: '30px' }}>
-            <h3 style={{ marginBottom: '16px' }}>生成的帧</h3>
-            <div className="image-grid">
-              {generatedFrames.map((url, index) => (
-                <div key={index} className="image-item">
-                  <img src={url} alt={`帧 ${index + 1}`} />
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
+
+      {generatedFrames.length > 0 && (
+        <div className="card animate-fade-in">
+          <div className="card-header">
+            <h3 className="card-title">生成的帧序列</h3>
+          </div>
+          <div className="image-grid">
+            {generatedFrames.map((url, index) => (
+              <div key={index} className="image-item">
+                <img src={url} alt={`帧 ${index + 1}`} />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
