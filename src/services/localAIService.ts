@@ -1,29 +1,9 @@
-let pipelineInstance: any = null
-
-export const LocalAIService = {
-  model: 'Xenova/stable-diffusion-2-1-base',
-  
-  async getPipeline() {
-    if (pipelineInstance) {
-      return pipelineInstance
-    }
-    const transformers = await import('@xenova/transformers')
-    pipelineInstance = await (transformers as any).pipeline('image-generation' as any, this.model)
-    return pipelineInstance
-  },
-  
-  async generate(prompt: string, options?: { width?: number; height?: number }) {
-    const pipeline = await this.getPipeline()
-    const output = await pipeline(prompt, {
-      width: options?.width || 512,
-      height: options?.height || 512,
-    })
-    return output[0]
-  },
-  
-  reset() {
-    pipelineInstance = null
+/**
+ * 已切换为云端 API 模式，本地服务暂时停用
+ */
+export const localAIService = {
+  isSupported: () => false,
+  generate: async () => {
+    throw new Error("请使用云端生成模式");
   }
-}
-
-export default LocalAIService
+};
