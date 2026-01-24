@@ -2,50 +2,48 @@ import { useState, useEffect } from 'react';
 import { 
   Sparkles, Video, FileText, Presentation, Settings, 
   Sun, Zap, Download, Clock, Upload, Trash2,
-  Layout, Maximize2, Image as ImageIcon
+  Layout, Maximize2, Image as ImageIcon // 确保这里引用了
 } from 'lucide-react';
 import { generateImage } from './lib/api';
 
-// 类型定义
 type Module = 'home' | 'image' | 'video' | 'ppt' | 'paper';
 type Mode = 'gen' | 'fix';
 
 export default function App() {
-  // 1. 持久化状态：确保关闭网页后数据依然存在
+  // 1. 持久化数据
   const initialState = {
     activeModule: 'home' as Module,
     mode: 'gen' as Mode,
     prompt: '',
     imageConfig: { ratio: '1:1', quality: 'fast', count: 1, history: [] as string[] },
     videoConfig: { duration: '5s', ratio: '16:9' },
-    pptConfig: { pages: 10, outline: '', style: 'Modern' },
-    paperConfig: { words: 2000, style: 'Academic', ref: '' }
+    pptConfig: { pages: 10, style: 'Modern' },
+    paperConfig: { words: 2000, style: 'Academic' }
   };
 
   const [state, setState] = useState(() => {
-    const saved = localStorage.getItem('ai_studio_final_v4');
+    const saved = localStorage.getItem('ai_studio_v5');
     return saved ? JSON.parse(saved) : initialState;
   });
 
   const [loading, setLoading] = useState(false);
   const [currentResults, setCurrentResults] = useState<string[]>([]);
 
-  // 状态自动同步到本地存储
   useEffect(() => {
-    localStorage.setItem('ai_studio_final_v4', JSON.stringify(state));
+    localStorage.setItem('ai_studio_v5', JSON.stringify(state));
   }, [state]);
 
-  // 2. 清空数据逻辑
+  // 2. 清除云数据
   const clearAllData = () => {
-    if (window.confirm("确定要删除所有云存储记录并重置界面吗？")) {
-      localStorage.removeItem('ai_studio_final_v4');
+    if (window.confirm("确定要删除所有历史记录吗？")) {
+      localStorage.removeItem('ai_studio_v5');
       setState(initialState);
       setCurrentResults([]);
       window.location.reload();
     }
   };
 
-  // 3. AI 执行逻辑
+  // 3. AI 执行引擎
   const handleExecute = async () => {
     if (!state.prompt || loading) return;
     setLoading(true);
@@ -56,230 +54,188 @@ export default function App() {
           generateImage(state.prompt, state.imageConfig.quality, state.imageConfig.ratio)
         );
         const urls = await Promise.all(tasks);
-        // 图片加速代理转发
-        const optimizedUrls = urls.map(url => `https://images.weserv.nl/?url=${encodeURIComponent(url)}`);
-        setCurrentResults(optimizedUrls);
+        // 使用代理加速
+        const optimized = urls.map(u => `https://images.weserv.nl/?url=${encodeURIComponent(u)}`);
+        setCurrentResults(optimized);
         setState((prev: any) => ({
           ...prev,
-          imageConfig: { ...prev.imageConfig, history: [...optimizedUrls, ...prev.imageConfig.history].slice(0, 12) }
+          imageConfig: { ...prev.imageConfig, history: [...optimized, ...prev.imageConfig.history].slice(0, 12) }
         }));
       } else {
-        await new Promise(r => setTimeout(r, 1500));
-        alert("该模块逻辑已就绪，正在接入云端算力...");
+        await new Promise(r => setTimeout(r, 1000));
+        alert("该功能模块已锁定，等待云端下发指令...");
       }
     } catch (e) {
-      alert("AI 服务暂时不可用，请稍后刷新重试");
+      alert("服务连接超时");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden flex flex-col text-white">
-      {/* 动态背景 */}
+    <div className="relative w-screen h-screen overflow-hidden flex flex-col text-white bg-[#050505]">
+      {/* 动态取色背景层 */}
       <div 
-        className="fixed inset-0 z-0 bg-cover bg-center transition-all duration-1000"
-        style={{ backgroundImage: "url('https://bing.img.run/rand_uhd.php')", backgroundColor: "#0a0a0a" }}
+        className="fixed inset-0 z-0 bg-cover bg-center transition-all duration-700"
+        style={{ backgroundImage: "url('https://bing.img.run/rand_uhd.php')" }}
       />
-      <div className="fixed inset-0 z-10 bg-black/40 backdrop-blur-[4px] saturate-150" />
+      <div className="fixed inset-0 z-10 bg-black/50 backdrop-blur-md saturate-150" />
 
-      {/* 主界面容器 */}
       <div className="relative z-20 flex flex-col h-full p-6 lg:p-10 gap-6">
-        
-        {/* 顶部标题栏 */}
+        {/* 顶部 */}
         <header className="flex items-center justify-between shrink-0">
           <div className="flex flex-col">
-            <h1 className="text-3xl font-black tracking-tighter drop-shadow-2xl">AI STUDIO</h1>
-            <p className="text-white/40 text-[10px] mt-1 uppercase tracking-[0.3em] font-bold italic">Resuming from last session</p>
+            <h1 className="text-2xl font-black tracking-tighter">AI STUDIO</h1>
+            <p className="text-white/30 text-[9px] uppercase tracking-[0.4em]">Personal Creative Hub</p>
           </div>
-          <nav className="flex items-center gap-1 p-1 ios-panel rounded-full bg-white/5">
+          
+          <nav className="flex items-center gap-1 p-1 bg-white/5 rounded-full border border-white/10 backdrop-blur-xl">
             {['image', 'paper'].includes(state.activeModule) && (
               <>
-                <TabBtn label={state.activeModule === 'image' ? '生成模式' : '创作模式'} active={state.mode === 'gen'} onClick={() => setState({...state, mode:'gen'})} />
-                <TabBtn label={state.activeModule === 'image' ? '清晰化' : '润色'} active={state.mode === 'fix'} onClick={() => setState({...state, mode:'fix'})} />
+                <button onClick={() => setState({...state, mode:'gen'})} className={`px-6 py-2 rounded-full text-[10px] font-bold transition-all ${state.mode === 'gen' ? 'bg-blue-600 shadow-lg' : 'text-white/40 hover:text-white'}`}>生成</button>
+                <button onClick={() => setState({...state, mode:'fix'})} className={`px-6 py-2 rounded-full text-[10px] font-bold transition-all ${state.mode === 'fix' ? 'bg-blue-600 shadow-lg' : 'text-white/40 hover:text-white'}`}>润色</button>
               </>
             )}
           </nav>
-          <div className="ios-panel px-5 py-2.5 rounded-full flex items-center gap-3 text-[11px] font-black bg-white/5">
-            <Sun size={14} className="text-yellow-400" />
-            <span className="tracking-widest uppercase">Smart Engine Online</span>
+
+          <div className="hidden md:flex items-center gap-3 px-4 py-2 bg-white/5 rounded-full border border-white/10">
+            <Sun size={12} className="text-yellow-400" />
+            <span className="text-[10px] font-black uppercase tracking-widest">Engine Optimized</span>
           </div>
         </header>
 
-        {/* 创意输入框 */}
-        <section className="ios-panel p-2 flex items-center shadow-2xl h-20 shrink-0 bg-white/10 border-white/10 group focus-within:border-blue-500/50 transition-all">
+        {/* 输入框 */}
+        <section className="flex items-center bg-white/10 border border-white/20 rounded-2xl p-2 shadow-2xl focus-within:border-blue-500/50 transition-all">
           <input 
             value={state.prompt}
             onChange={(e) => setState({...state, prompt: e.target.value})}
             onKeyDown={(e) => e.key === 'Enter' && handleExecute()}
-            placeholder="在此输入您的创意要求..."
-            className="flex-1 bg-transparent border-none outline-none px-8 text-lg text-white placeholder:text-white/20"
+            placeholder="描述你的想法，AI 为你实现..."
+            className="flex-1 bg-transparent border-none outline-none px-6 text-base text-white placeholder:text-white/20"
           />
           <button 
             onClick={handleExecute}
-            className="h-16 px-10 bg-blue-600 hover:bg-blue-500 rounded-2xl flex items-center gap-2 font-bold transition-all active:scale-95 shadow-xl shadow-blue-900/40"
+            className="h-14 px-8 bg-blue-600 hover:bg-blue-500 rounded-xl flex items-center gap-2 font-bold active:scale-95 transition-all shadow-xl"
           >
-            {loading ? <Clock className="animate-spin" size={20} /> : <Zap size={20} />}
-            执行任务
+            {loading ? <Clock className="animate-spin" size={18} /> : <Zap size={18} />}
+            <span>执行</span>
           </button>
         </section>
 
-        {/* 三栏主布局 */}
-        <div className="flex-1 flex gap-6 min-h-0 overflow-hidden">
-          
-          {/* 左侧：侧边导航栏 */}
-          <aside className="w-20 ios-panel flex flex-col items-center py-8 gap-6 shrink-0 bg-black/20">
-            <NavBtn icon={<Layout />} active={state.activeModule === 'home'} onClick={() => setState({...state, activeModule:'home'})} />
-            <NavBtn icon={<Sparkles />} active={state.activeModule === 'image'} onClick={() => setState({...state, activeModule:'image'})} />
-            <NavBtn icon={<Video />} active={state.activeModule === 'video'} onClick={() => setState({...state, activeModule:'video'})} />
-            <NavBtn icon={<Presentation />} active={state.activeModule === 'ppt'} onClick={() => setState({...state, activeModule:'ppt'})} />
-            <NavBtn icon={<FileText />} active={state.activeModule === 'paper'} onClick={() => setState({...state, activeModule:'paper'})} />
+        {/* 主体三栏 */}
+        <div className="flex-1 flex gap-6 min-h-0">
+          {/* 左侧导航 */}
+          <aside className="w-16 flex flex-col items-center py-6 gap-6 bg-black/20 rounded-3xl border border-white/5">
+            <NavIcon icon={<Layout size={20}/>} active={state.activeModule === 'home'} onClick={() => setState({...state, activeModule:'home'})} />
+            <NavIcon icon={<Sparkles size={20}/>} active={state.activeModule === 'image'} onClick={() => setState({...state, activeModule:'image'})} />
+            <NavIcon icon={<Video size={20}/>} active={state.activeModule === 'video'} onClick={() => setState({...state, activeModule:'video'})} />
+            <NavIcon icon={<Presentation size={20}/>} active={state.activeModule === 'ppt'} onClick={() => setState({...state, activeModule:'ppt'})} />
+            <NavIcon icon={<FileText size={20}/>} active={state.activeModule === 'paper'} onClick={() => setState({...state, activeModule:'paper'})} />
             <div className="flex-1" />
-            <NavBtn icon={<Settings />} />
+            <button className="text-white/20 hover:text-white"><Settings size={20}/></button>
           </aside>
 
-          {/* 中间：自适应结果展示区 */}
-          <main className="flex-1 ios-panel relative overflow-hidden flex flex-col bg-black/10">
-            <div className="flex-1 overflow-y-auto p-8 no-scrollbar">
+          {/* 中间预览 */}
+          <main className="flex-1 bg-black/20 rounded-3xl border border-white/5 relative overflow-hidden flex flex-col">
+            <div className="flex-1 overflow-y-auto p-6 no-scrollbar">
               {loading ? (
-                <div className="h-full flex flex-col items-center justify-center gap-6">
-                  <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-                  <p className="text-blue-400 font-black tracking-widest text-sm uppercase">Calculating AI Weights...</p>
+                <div className="h-full flex flex-col items-center justify-center gap-4 text-blue-400">
+                  <div className="w-12 h-12 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                  <p className="text-[10px] font-black tracking-[0.3em]">AI PROCESSING</p>
                 </div>
               ) : currentResults.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {currentResults.map((url, i) => (
-                    <div key={i} className="group relative aspect-video ios-panel overflow-hidden border-white/5 shadow-2xl">
+                    <div key={i} className="group relative aspect-video rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-white/5">
                       <img src={url} className="w-full h-full object-cover" alt="result" />
-                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
-                        <button onClick={() => window.open(url)} className="p-4 bg-white/20 backdrop-blur-xl rounded-full hover:bg-blue-600 transition-all active:scale-90"><Download size={24}/></button>
-                        <button className="p-4 bg-white/20 backdrop-blur-xl rounded-full hover:bg-white/40 active:scale-90"><Maximize2 size={24}/></button>
+                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-4">
+                        <button onClick={() => window.open(url)} className="p-3 bg-white/10 rounded-full hover:bg-blue-600"><Download size={20}/></button>
+                        <button className="p-3 bg-white/10 rounded-full hover:bg-white/20"><Maximize2 size={20}/></button>
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="h-full flex flex-col items-center justify-center text-white/5 gap-6">
-                  <div className="text-center">
-                    <h2 className="text-6xl font-black text-white/10 mb-6 tracking-tighter uppercase italic">{state.activeModule} Ready</h2>
-                    <p className="text-xs tracking-[0.8em] font-medium text-white/20 uppercase">Awaiting your creativity</p>
-                  </div>
+                <div className="h-full flex flex-col items-center justify-center text-white/5 gap-4">
+                  <ImageIcon size={80} strokeWidth={1} />
+                  <p className="text-[10px] font-black tracking-[0.5em] uppercase">Ready for Canvas</p>
                 </div>
               )}
             </div>
           </main>
 
-          {/* 右侧：配置设置面板 */}
-          <aside className="w-80 ios-panel p-8 flex flex-col gap-10 shrink-0 overflow-y-auto no-scrollbar bg-black/20">
+          {/* 右侧设置 */}
+          <aside className="w-72 flex flex-col gap-8 p-6 bg-black/20 rounded-3xl border border-white/5 overflow-y-auto no-scrollbar">
             {state.activeModule === 'home' ? (
-              <div className="flex flex-col gap-8">
-                <div>
-                  <p className="text-[10px] font-black opacity-30 mb-5 tracking-[0.2em] uppercase">Storage System</p>
-                  <button 
-                    onClick={clearAllData}
-                    className="w-full py-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-bold flex items-center justify-center gap-2 hover:bg-red-500/30 transition-all shadow-lg"
-                  >
-                    <Trash2 size={14} /> 删除云存储数据
-                  </button>
-                </div>
-                <div className="p-6 ios-panel bg-white/5 border-white/5">
-                  <p className="text-[11px] text-white/40 leading-relaxed font-bold italic tracking-wide">
-                    “系统已自动记录您的上一次创作状态。所有操作均经过 AIStudio V2 加速引擎处理。”
-                  </p>
+              <div className="flex flex-col gap-6">
+                <p className="text-[10px] font-black opacity-20 tracking-widest uppercase">System Storage</p>
+                <button 
+                  onClick={clearAllData}
+                  className="w-full py-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-[10px] font-bold flex items-center justify-center gap-2 hover:bg-red-500/20"
+                >
+                  <Trash2 size={14} /> 删除云存储数据
+                </button>
+                <div className="mt-4 p-4 rounded-xl bg-white/5 border border-white/5">
+                  <p className="text-[10px] text-white/30 leading-relaxed italic">当前主题色已随必应背景自动调整。所有生成历史将保存于本地缓存中。</p>
                 </div>
               </div>
             ) : (
-              <RenderSettings state={state} setState={setState} />
+              <SettingsPanel state={state} setState={setState} />
             )}
           </aside>
-
         </div>
       </div>
     </div>
   );
 }
 
-// 子组件：功能设置详情
-function RenderSettings({ state, setState }: any) {
-  const Label = ({ children }: any) => <p className="text-[10px] font-black opacity-30 mb-5 tracking-[0.2em] uppercase text-white">{children}</p>;
-
-  switch (state.activeModule) {
-    case 'image':
-      return (
-        <div className="flex flex-col gap-10">
-          <div>
-            <Label>渲染模型</Label>
-            <div className="flex flex-col gap-2">
-              <ConfigBtn label="极速模型 (Turbo)" active={state.imageConfig.quality === 'fast'} onClick={() => setState({...state, imageConfig: {...state.imageConfig, quality:'fast'}})} />
-              <ConfigBtn label="精细画质 (Flux)" active={state.imageConfig.quality === 'high'} onClick={() => setState({...state, imageConfig: {...state.imageConfig, quality:'high'}})} />
-            </div>
-          </div>
-          <div>
-            <Label>并行张数</Label>
-            <div className="grid grid-cols-4 gap-2">
-              {[1, 2, 3, 4].map(n => (
-                <button 
-                  key={n}
-                  onClick={() => setState({...state, imageConfig: {...state.imageConfig, count: n}})}
-                  className={`py-3 rounded-xl text-xs font-black border transition-all ${state.imageConfig.count === n ? 'border-blue-500 bg-blue-500/30 text-blue-400' : 'border-white/10 bg-white/5 text-white/30'}`}
-                >
-                  {n}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <Label>云端历史</Label>
-            <div className="grid grid-cols-3 gap-2">
-              {state.imageConfig.history.map((url: string, i: number) => (
-                <div key={i} className="aspect-square rounded-lg overflow-hidden border border-white/10 bg-white/5">
-                  <img src={url} className="w-full h-full object-cover" alt="hist" />
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      );
-    case 'video':
-      return (
-        <div className="flex flex-col gap-10">
-          <div><Label>参考上传</Label><div className="h-36 border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center text-white/20 gap-3 hover:bg-white/5 transition-colors cursor-pointer"><Upload size={24}/><span className="text-[10px] font-bold">上传参考素材</span></div></div>
-          <div><Label>视频长度</Label><div className="flex gap-2"><ConfigBtn label="5s" active /><ConfigBtn label="10s" /></div></div>
-        </div>
-      );
-    case 'ppt':
-      return (
-        <div className="flex flex-col gap-10">
-          <div><Label>PPT 结构</Label><textarea className="w-full h-40 bg-white/5 border border-white/10 rounded-2xl p-4 text-xs outline-none focus:border-blue-500 transition-all placeholder:text-white/10" placeholder="在此输入 PPT 目录..."></textarea></div>
-          <div><Label>页面幅宽</Label><div className="grid grid-cols-2 gap-2"><ConfigBtn label="16:9" active /><ConfigBtn label="4:3" /></div></div>
-        </div>
-      );
-    default:
-      return <div className="text-white/10 text-center py-20 font-black italic">Wait for Input</div>;
-  }
-}
-
-// 基础 UI 按钮组件
-function TabBtn({ label, active, onClick }: any) {
+// 子组件：导航按钮
+function NavIcon({ icon, active, onClick }: any) {
   return (
-    <button onClick={onClick} className={`px-8 py-2.5 rounded-full text-[11px] font-black transition-all ${active ? 'bg-blue-600 text-white shadow-xl scale-105' : 'text-white/20 hover:text-white'}`}>
-      {label}
-    </button>
-  );
-}
-
-function NavBtn({ icon, active, onClick }: any) {
-  return (
-    <button onClick={onClick} className={`w-14 h-14 rounded-full flex items-center justify-center transition-all ${active ? 'bg-blue-600 text-white shadow-2xl scale-110 shadow-blue-500/40' : 'text-white/20 hover:bg-white/10 hover:text-white'}`}>
+    <button 
+      onClick={onClick}
+      className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all ${active ? 'bg-blue-600 text-white shadow-xl scale-110' : 'text-white/20 hover:bg-white/5 hover:text-white'}`}
+    >
       {icon}
     </button>
   );
 }
 
-function ConfigBtn({ label, active, onClick }: any) {
-  return (
-    <button onClick={onClick} className={`w-full py-4 px-5 rounded-2xl text-left text-[11px] font-black border-2 transition-all ${active ? 'border-blue-500 bg-blue-500/20 text-blue-400 shadow-lg' : 'border-transparent bg-white/5 text-white/20 hover:bg-white/10'}`}>
-      {label}
-    </button>
-  );
+// 子组件：动态配置面板
+function SettingsPanel({ state, setState }: any) {
+  const Label = ({ title }: { title: string }) => <p className="text-[9px] font-black opacity-20 tracking-widest uppercase mb-4 text-white">{title}</p>;
+
+  if (state.activeModule === 'image') {
+    return (
+      <div className="flex flex-col gap-8">
+        <div>
+          <Label title="渲染模型" />
+          <div className="flex flex-col gap-2">
+            <button onClick={() => setState({...state, imageConfig: {...state.imageConfig, quality:'fast'}})} className={`w-full py-3 px-4 rounded-xl text-left text-[10px] font-bold border ${state.imageConfig.quality === 'fast' ? 'border-blue-500 bg-blue-500/10 text-blue-400' : 'border-white/5 bg-white/5 text-white/40'}`}>极速 Turbo</button>
+            <button onClick={() => setState({...state, imageConfig: {...state.imageConfig, quality:'high'}})} className={`w-full py-3 px-4 rounded-xl text-left text-[10px] font-bold border ${state.imageConfig.quality === 'high' ? 'border-blue-500 bg-blue-500/10 text-blue-400' : 'border-white/5 bg-white/5 text-white/40'}`}>画质 Flux</button>
+          </div>
+        </div>
+        <div>
+          <Label title="生成数量" />
+          <div className="grid grid-cols-4 gap-2">
+            {[1, 2, 3, 4].map(n => (
+              <button key={n} onClick={() => setState({...state, imageConfig: {...state.imageConfig, count: n}})} className={`py-2 rounded-lg text-[10px] font-bold border transition-all ${state.imageConfig.count === n ? 'border-blue-500 bg-blue-500/20 text-blue-400' : 'border-white/5 bg-white/5 text-white/20'}`}>{n}</button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <Label title="近期历史" />
+          <div className="grid grid-cols-3 gap-2">
+            {state.imageConfig.history.map((url: string, i: number) => (
+              <div key={i} className="aspect-square rounded-lg overflow-hidden bg-white/5 border border-white/10">
+                <img src={url} className="w-full h-full object-cover" alt="hist" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  return <div className="text-[10px] text-white/10 text-center py-20 font-bold uppercase tracking-widest">Configuring Module...</div>;
 }
