@@ -8,7 +8,8 @@ export const LocalAIService = {
       return pipelineInstance
     }
     const transformers = await import('@xenova/transformers')
-    pipelineInstance = await transformers.pipeline('image-generation', this.model)
+    // 使用类型断言修复 TS2345 错误
+    pipelineInstance = await (transformers as any).pipeline('image-generation' as any, this.model)
     return pipelineInstance
   },
   
