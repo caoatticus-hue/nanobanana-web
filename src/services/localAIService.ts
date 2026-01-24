@@ -1,7 +1,6 @@
 let pipelineInstance: any = null
 
 export const LocalAIService = {
-  task: 'image-generation',
   model: 'Xenova/stable-diffusion-2-1-base',
   
   async getPipeline() {
