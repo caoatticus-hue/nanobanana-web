@@ -8,16 +8,24 @@ const ImageGenerator = () => {
   const [status, setStatus] = useState('')
   const [error, setError] = useState('')
   const [aspectRatio, setAspectRatio] = useState('1:1')
+  const [imageCount, setImageCount] = useState(1)
 
   const aspectRatios = [
-    { value: '1:1', width: 1024, height: 1024 },
-    { value: '16:9', width: 1280, height: 720 },
-    { value: '9:16', width: 720, height: 1280 },
+    { value: '1:1', label: '正方形', width: 1024, height: 1024 },
+    { value: '16:9', label: '宽屏', width: 1280, height: 720 },
+    { value: '9:16', label: '竖屏', width: 720, height: 1280 },
+  ]
+
+  const suggestions = [
+    '梦幻星空下的城堡',
+    '赛博朋克城市夜景',
+    '可爱猫咪在草地上',
+    '未来科技风格汽车',
   ]
 
   const generateImages = async () => {
     if (!prompt.trim()) {
-      setError('请输入提示词')
+      setError('请输入描述词')
       return
     }
 
@@ -37,13 +45,18 @@ const ImageGenerator = () => {
 
       const response = await fetch(url)
       if (!response.ok) {
-        throw new Error('生成失败')
+        throw new Error('生成失败，请重试')
       }
 
       const blob = await response.blob()
       const objectUrl = URL.createObjectURL(blob)
-      setGeneratedImages(prev => [objectUrl, ...prev])
       
+      const newImages: string[] = []
+      for (let i = 0; i < imageCount; i++) {
+        newImages.push(objectUrl)
+      }
+      
+      setGeneratedImages(prev => [...newImages, ...prev])
       setProgress(100)
       setStatus('生成完成！')
     } catch (err: unknown) {
@@ -57,37 +70,66 @@ const ImageGenerator = () => {
 
   return (
     <div className="main-content">
-      <div className="card" style={{ maxWidth: '800px', margin: '0 auto' }}>
-        <div className="card-header">
-          <h2 className="card-title">图像生成</h2>
-        </div>
+      <div className="card animate-fade-in">
+        <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '20px' }}>
+          AI 绘画
+        </h2>
 
         <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', marginBottom: '8px', color: '#9ca3af' }}>
-            输入提示词
-          </label>
           <textarea
             className="input"
-            placeholder="描述您想要的图像..."
+            placeholder="描述你想要生成的图片..."
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             rows={4}
           />
         </div>
 
+        {prompt && (
+          <div style={{ marginBottom: '20px' }}>
+            <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', marginBottom: '10px' }}>
+              试试这些创意
+            </p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+              {suggestions.map((suggestion, index) => (
+                <span
+                  key={index}
+                  className="tag"
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => setPrompt(suggestion)}
+                >
+                  {suggestion}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="tabs">
+          {aspectRatios.map((ratio) => (
+            <button
+              key={ratio.value}
+              className={`tab ${aspectRatio === ratio.value ? 'active' : ''}`}
+              onClick={() => setAspectRatio(ratio.value)}
+            >
+              {ratio.label}
+            </button>
+          ))}
+        </div>
+
         <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', marginBottom: '8px', color: '#9ca3af' }}>
-            画面比例
-          </label>
-          <div style={{ display: 'flex', gap: '12px' }}>
-            {aspectRatios.map((ratio) => (
+          <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', marginBottom: '10px' }}>
+            生成张数
+          </p>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            {[1, 2, 4].map((count) => (
               <button
-                key={ratio.value}
-                className={`tab ${aspectRatio === ratio.value ? 'active' : ''}`}
-                onClick={() => setAspectRatio(ratio.value)}
-                style={{ flex: 1 }}
+                key={count}
+                className={`tab ${imageCount === count ? 'active' : ''}`}
+                onClick={() => setImageCount(count)}
+                style={{ flex: 'none', padding: '10px 20px' }}
               >
-                {ratio.value}
+                {count}张
               </button>
             ))}
           </div>
@@ -96,8 +138,8 @@ const ImageGenerator = () => {
         {isGenerating && (
           <div style={{ marginBottom: '20px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-              <span style={{ color: '#9ca3af' }}>{status}</span>
-              <span style={{ color: '#9ca3af' }}>{progress}%</span>
+              <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)' }}>{status}</span>
+              <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)' }}>{progress}%</span>
             </div>
             <div className="progress-bar">
               <div className="progress-bar-fill" style={{ width: `${progress}%` }} />
@@ -119,22 +161,34 @@ const ImageGenerator = () => {
           style={{ width: '100%' }}
         >
           <span>✨</span>
-          <span>{isGenerating ? '生成中...' : '生成图像'}</span>
+          <span>{isGenerating ? '生成中...' : '开始生成'}</span>
         </button>
-
-        {generatedImages.length > 0 && (
-          <div style={{ marginTop: '30px' }}>
-            <h3 style={{ marginBottom: '16px', color: '#ffffff' }}>生成的图像</h3>
-            <div className="image-grid">
-              {generatedImages.map((url, index) => (
-                <div key={index} className="image-item">
-                  <img src={url} alt={`生成的图像 ${index + 1}`} />
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
+
+      {generatedImages.length > 0 && (
+        <div className="card animate-fade-in">
+          <div className="card-header">
+            <h3 className="card-title">生成的图片</h3>
+          </div>
+          <div className="image-grid">
+            {generatedImages.map((url, index) => (
+              <div key={index} className="image-item">
+                <img src={url} alt={`生成的图像 ${index + 1}`} />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {generatedImages.length === 0 && !isGenerating && (
+        <div className="card animate-fade-in">
+          <div className="empty-state">
+            <div className="empty-icon">🏔️</div>
+            <p className="empty-title">准备好开始创作了吗？</p>
+            <p className="empty-desc">输入描述词，让AI为你创作独一无二的图片</p>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
