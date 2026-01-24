@@ -3,40 +3,31 @@
 @tailwind utilities;
 
 :root {
-  --background: #f0f2f5;
+  --glass-bg: rgba(255, 255, 255, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.3);
+  --mask-color: rgba(255, 255, 255, 0.2);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --glass-bg: rgba(0, 0, 0, 0.4);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --mask-color: rgba(0, 0, 0, 0.5);
+  }
 }
 
 body {
   margin: 0;
-  background-color: var(--background);
-  color: #1a1a1a;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
+  overflow: hidden; /* 保持 Studio 感，不让 body 滚动 */
 }
 
-/* 针对 Tab 栏隐藏多余滚动条 */
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-/* 进场动画 */
-.animate-in {
-  animation-duration: 0.5s;
-  animation-fill-mode: both;
+/* 毛玻璃组件基类 */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid var(--glass-border);
 }
 
-@keyframes zoomIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
-}
-.zoom-in { animation-name: zoomIn; }
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-.fade-in { animation-name: fadeIn; }
+/* 隐藏滚动条 */
+.no-scrollbar::-webkit-scrollbar { display: none; }
