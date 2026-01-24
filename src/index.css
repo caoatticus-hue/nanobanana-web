@@ -3,33 +3,39 @@
 @tailwind utilities;
 
 :root {
-  --glass-bg: rgba(255, 255, 255, 0.45);
-  --glass-border: rgba(255, 255, 255, 0.2);
-  --ios-radius: 24px; /* 调小圆角，更精致 */
+  --ios-radius: 20px; /* 更加精致的 iOS 圆角 */
+  --app-padding: clamp(16px, 4vw, 40px); /* 动态间距，解决拥挤感 */
+}
+
+/* 连续圆角 Squircle 模拟 */
+.ios-panel {
+  border-radius: var(--ios-radius);
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(25px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --glass-bg: rgba(20, 20, 22, 0.6);
-    --glass-border: rgba(255, 255, 255, 0.1);
+  .ios-panel {
+    background: rgba(20, 20, 22, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
   }
 }
 
-body {
-  margin: 0;
-  background: #000;
-  overflow: hidden;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+/* 稳定背景层 */
+.bg-wallpaper {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: #121212 url('https://bing.img.run/rand_uhd.php') center/cover no-repeat;
 }
 
-/* 统一 iOS 连续圆角卡片 */
-.ios-panel {
-  border-radius: var(--ios-radius);
-  background: var(--glass-bg);
-  backdrop-filter: blur(30px) saturate(180%);
-  -webkit-backdrop-filter: blur(30px) saturate(180%);
-  border: 1px solid var(--glass-border);
+/* 模块切换动画 */
+.fade-scale-in {
+  animation: fadeScale 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* 隐藏滚动条但保留功能 */
-.no-scrollbar::-webkit-scrollbar { display: none; }
+@keyframes fadeScale {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
+}
