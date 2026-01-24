@@ -3,52 +3,33 @@
 @tailwind utilities;
 
 :root {
-  --glass-bg: rgba(255, 255, 255, 0.4);
+  --glass-bg: rgba(255, 255, 255, 0.45);
   --glass-border: rgba(255, 255, 255, 0.2);
-  --app-padding: 32px; /* 统一全屏边距 */
-  --ios-radius: 28px;  /* 适中的 iOS 连续圆角 */
+  --ios-radius: 24px; /* 调小圆角，更精致 */
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --glass-bg: rgba(24, 24, 26, 0.55);
-    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-bg: rgba(20, 20, 22, 0.6);
+    --glass-border: rgba(255, 255, 255, 0.1);
   }
 }
 
 body {
   margin: 0;
-  /* 预加载背景色，防止白屏 */
-  background: #121212; 
+  background: #000;
   overflow: hidden;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
 }
 
-/* 核心容器：实现统一边距 */
-.app-container {
-  padding: var(--app-padding);
-  height: 100vh;
-  width: 100vw;
-  display: flex;
-  flex-direction: column;
-  gap: var(--app-padding);
-}
-
-.ios-card {
+/* 统一 iOS 连续圆角卡片 */
+.ios-panel {
   border-radius: var(--ios-radius);
   background: var(--glass-bg);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(30px) saturate(180%);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
   border: 1px solid var(--glass-border);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.ios-btn-circle {
-  border-radius: 50%;
-  width: 56px;
-  height: 56px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-}
+/* 隐藏滚动条但保留功能 */
+.no-scrollbar::-webkit-scrollbar { display: none; }
