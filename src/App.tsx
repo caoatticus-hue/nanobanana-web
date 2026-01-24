@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { 
   Sun, Settings, Sparkles, 
-  FileText, Presentation, Loader2, Image as ImageIcon,
+  Presentation, Loader2, Image as ImageIcon,
   Zap, Download, Clock
 } from 'lucide-react';
 import { generateImage } from './lib/api';
@@ -18,7 +18,7 @@ function App() {
   // 必应背景预设
   const bgUrl = "https://bing.img.run/rand_uhd.php";
 
-  // 修复后的下载逻辑：真正保存文件
+  // 真正的文件下载逻辑
   const handleDownload = async () => {
     if (!image) return;
     try {
@@ -33,7 +33,7 @@ function App() {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (e) {
-      window.open(image, '_blank'); // 备选方案
+      window.open(image, '_blank');
     }
   };
 
@@ -42,10 +42,9 @@ function App() {
     setLoading(true);
     
     try {
-      // 传入当前模式和比例
       const url = await generateImage(prompt, mode, ratio);
       
-      // 预加载图片对象，确保加载成功后再显示
+      // 预加载逻辑，防止不出图
       const img = new Image();
       img.src = url;
       img.onload = () => {
@@ -53,11 +52,12 @@ function App() {
         setLoading(false);
       };
       img.onerror = () => {
-        throw new Error("Load failed");
+        setLoading(false);
+        alert("图片生成失败，请稍后重试");
       };
     } catch (e) {
-      alert("生成超时，请检查网络或更换节点");
       setLoading(false);
+      alert("网络连接异常");
     }
   };
 
@@ -70,10 +70,10 @@ function App() {
       />
       <div className="absolute inset-0 bg-black/30 dark:bg-black/50 backdrop-blur-[2px]" />
 
-      <div className="app-container relative z-10">
+      <div className="app-container relative z-10 flex flex-col h-full p-8 gap-8">
         
-        {/* 顶部搜索条：高度统一，圆角适中 */}
-        <header className="w-full h-20 ios-card p-2 flex items-center shadow-lg">
+        {/* 顶部搜索条 */}
+        <header className="w-full h-20 ios-card p-2 flex items-center shadow-lg shrink-0">
           <input 
             type="text"
             value={prompt}
@@ -91,10 +91,10 @@ function App() {
           </button>
         </header>
 
-        <div className="flex-1 flex gap-8 min-h-0">
+        <div className="flex-1 flex gap-8 min-h-0 overflow-hidden">
           
-          {/* 侧边栏：纯圆形按钮，悬浮感 */}
-          <aside className="flex flex-col gap-6">
+          {/* 侧边栏：圆形按钮 */}
+          <aside className="flex flex-col gap-6 shrink-0">
             <CircleNavBtn icon={<Sparkles size={24} />} active />
             <CircleNavBtn icon={<Presentation size={24} />} />
             <CircleNavBtn icon={<Clock size={24} />} />
@@ -109,7 +109,7 @@ function App() {
               <div className="relative w-full h-full flex items-center justify-center p-8">
                 <img 
                   src={image} 
-                  className="max-w-full max-h-full rounded-[20px] object-contain shadow-2xl transition-all" 
+                  className="max-w-full max-h-full rounded-[20px] object-contain shadow-2xl" 
                   alt="AI Result"
                 />
                 <button 
@@ -122,22 +122,22 @@ function App() {
             ) : (
               <div className="opacity-20 flex flex-col items-center gap-6">
                 <ImageIcon size={120} strokeWidth={0.5} />
-                <p className="tracking-[0.5em] text-xs font-light">READY TO CREATE</p>
+                <p className="tracking-[0.5em] text-xs font-light">AI STUDIO V2.1</p>
               </div>
             )}
             
             {loading && (
               <div className="absolute inset-0 ios-card flex flex-col items-center justify-center z-20 bg-black/40">
                 <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-                <p className="mt-6 font-bold tracking-widest text-blue-400">正在同步云端算力...</p>
+                <p className="mt-6 font-bold tracking-widest text-blue-400">正在同步算力...</p>
               </div>
             )}
           </section>
 
           {/* 设置区 */}
-          <section className="flex-1 ios-card p-8 flex flex-col gap-8 shadow-2xl overflow-y-auto no-scrollbar">
+          <section className="flex-1 ios-card p-8 flex flex-col gap-8 shadow-2xl overflow-y-auto no-scrollbar shrink-0">
             <div>
-              <div className="text-[10px] font-black opacity-30 mb-4 tracking-[0.2em] uppercase">渲染引擎</div>
+              <div className="text-[10px] font-black opacity-30 mb-4 tracking-[0.2em] uppercase text-white">渲染引擎</div>
               <div className="flex flex-col gap-3">
                 <ModeItem 
                   title="极速模式" desc="约 10s 出图" 
@@ -145,7 +145,7 @@ function App() {
                   onClick={() => setMode('fast')}
                 />
                 <ModeItem 
-                  title="画质模式" desc="深度细节" 
+                  title="画质模式" desc="深度细节渲染" 
                   active={mode === 'high'} 
                   onClick={() => setMode('high')}
                 />
@@ -153,13 +153,13 @@ function App() {
             </div>
 
             <div>
-              <div className="text-[10px] font-black opacity-30 mb-4 tracking-[0.2em] uppercase">画幅比例</div>
+              <div className="text-[10px] font-black opacity-30 mb-4 tracking-[0.2em] uppercase text-white">画幅比例</div>
               <div className="grid grid-cols-2 gap-3">
                 {['1:1', '16:9', '9:16', '4:3'].map(r => (
                   <button 
                     key={r}
                     onClick={() => setRatio(r)}
-                    className={`py-4 rounded-[18px] text-xs font-bold transition-all border-2 ${ratio === r ? 'border-blue-500 bg-blue-500/20 text-blue-400' : 'border-transparent bg-white/5 hover:bg-white/10'}`}
+                    className={`py-4 rounded-[18px] text-xs font-bold transition-all border-2 ${ratio === r ? 'border-blue-500 bg-blue-500/20 text-blue-400' : 'border-transparent bg-white/5 hover:bg-white/10 text-white/60'}`}
                   >
                     {r}
                   </button>
@@ -168,7 +168,7 @@ function App() {
             </div>
 
             <div className="mt-auto">
-              <div className="flex justify-between text-[10px] font-black opacity-30 mb-4 tracking-[0.2em]">
+              <div className="flex justify-between text-[10px] font-black opacity-30 mb-4 tracking-[0.2em] text-white">
                 <span>生成张数</span>
                 <span className="text-blue-400">{count} 张</span>
               </div>
@@ -187,7 +187,7 @@ function App() {
 
 function CircleNavBtn({ icon, active }: { icon: any, active?: boolean }) {
   return (
-    <button className={`ios-btn-circle transition-all shadow-lg ${active ? 'bg-blue-600 text-white scale-110 shadow-blue-500/40' : 'ios-card text-white/50 hover:scale-105'}`}>
+    <button className={`w-14 h-14 rounded-full flex items-center justify-center transition-all shadow-lg shrink-0 ${active ? 'bg-blue-600 text-white scale-110 shadow-blue-500/40' : 'ios-card text-white/50 hover:scale-105'}`}>
       {icon}
     </button>
   );
@@ -197,10 +197,10 @@ function ModeItem({ title, desc, active, onClick }: any) {
   return (
     <button 
       onClick={onClick}
-      className={`p-5 rounded-[22px] text-left transition-all border-2 ${active ? 'border-blue-500 bg-blue-500/10' : 'border-transparent bg-white/5 hover:bg-white/10'}`}
+      className={`p-5 rounded-[22px] text-left transition-all border-2 ${active ? 'border-blue-500 bg-blue-500/10 shadow-lg' : 'border-transparent bg-white/5 hover:bg-white/10'}`}
     >
-      <div className={`text-sm font-bold ${active ? 'text-blue-400' : ''}`}>{title}</div>
-      <div className="text-[10px] opacity-40 mt-1">{desc}</div>
+      <div className={`text-sm font-bold ${active ? 'text-blue-400' : 'text-white'}`}>{title}</div>
+      <div className="text-[10px] opacity-40 mt-1 text-white">{desc}</div>
     </button>
   );
 }
