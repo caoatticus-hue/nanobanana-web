@@ -1,43 +1,41 @@
 /**
- * 纯云端免费 AI 生成逻辑 - Hugging Face 版
- * 适用场景：个人频繁使用（免费额度内非常充足）
+ * AI Studio 免登录、全免费 API 方案
+ * 采用 Pollinations AI，适合在无法注册 Hugging Face 的情况下使用
  */
 
-// 1. 请在此处填入你的 Hugging Face Token (https://huggingface.co/settings/tokens)
-const HF_TOKEN = "hf_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"; 
-
 export const generateImage = async (prompt: string) => {
-  // 使用质量极高的 FLUX.1 或 SDXL 模型
-  const model = "black-forest-labs/FLUX.1-dev"; 
+  // 设置图片参数
+  const width = 1024;
+  const height = 1024;
+  const seed = Math.floor(Math.random() * 100000); // 随机种子让每次生成的图都不一样
+  const model = 'flux'; // 使用目前最顶级的 Flux 模型
 
-  const response = await fetch(
-    `https://api-inference.huggingface.co/models/${model}`,
-    {
-      headers: {
-        Authorization: `Bearer ${HF_TOKEN}`,
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-      body: JSON.stringify({ 
-        inputs: prompt,
-        parameters: {
-            guidance_scale: 3.5,
-            num_inference_steps: 28
-        }
-      }),
-    }
-  );
+  // 对中文或特殊字符进行编码，防止请求出错
+  const encodedPrompt = encodeURIComponent(prompt);
+  
+  // 构造生成 URL
+  // nologo=true 去除水印，enhance=true 自动优化提示词
+  const imageUrl = `https://pollinations.ai/p/${encodedPrompt}?width=${width}&height=${height}&seed=${seed}&model=${model}&nologo=true&enhance=true`;
 
-  // 如果模型正在加载，Hugging Face 会返回 503，这里需要处理一下
-  if (response.status === 503) {
-    throw new Error("AI 模型正在后台启动，请 30 秒后重试。");
+  try {
+    // 预检一下链接是否可用
+    const response = await fetch(imageUrl);
+    if (!response.ok) throw new Error("生成服务暂不可用");
+    
+    // 直接返回这个 URL 即可，前端 <img> 标签可以直接渲染
+    return imageUrl;
+  } catch (error) {
+    console.error("生成失败:", error);
+    throw new Error("生成失败，请检查网络连接");
   }
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || "生成失败，请检查网络或 Token");
-  }
-
-  const blob = await response.blob();
-  return URL.createObjectURL(blob); 
 };
+
+/**
+ * 视频生成接口 (未来规划)
+ */
+export const generateVideo = async (prompt: string) => {
+  // 目前 Pollinations 对视频的支持还在 Beta 阶段
+  // 暂时返回错误，等图片功能稳了我们再接入
+  throw new Error("视频模块正在接入中，目前请先使用生图功能");
+};
+0
